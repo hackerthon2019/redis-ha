@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,shrink-to-fit=no,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <title>home</title>
+    <link href="//cdn.bootcss.com/element-ui/2.0.11/theme-chalk/index.css" rel="stylesheet">
+    <style></style>
+</head>
+
+<body style="text-align:center;">
+<div id="app">
+
+    <el-collapse v-model="activeNames">
+        <el-collapse-item title="写入缓存" name="set">
+            <el-form label-width="80px">
+                <el-form-item label="键">
+                    <el-input v-model="up.key"></el-input>
+                </el-form-item>
+                <el-form-item label="值">
+                    <el-input v-model="up.value"></el-input>
+                </el-form-item>
+            </el-form>
+            <div>
+                <el-button style="margin:10px;" type="primary" @click="set">写入缓存</el-button>
+            </div>
+        </el-collapse-item>
+
+        <el-collapse-item title="读取缓存" name="get">
+            <el-form label-width="80px">
+                <el-form-item label="键">
+                    <el-input v-model="down.key"></el-input>
+                </el-form-item>
+            </el-form>
+            <div>
+                <el-button style="margin:10px;" type="primary" @click="get">读取缓存</el-button>
+            </div>
+        </el-collapse-item>
+
+        <el-collapse-item title="模拟故障" name="att">
+            <el-form label-width="80px">
+                <el-form-item label="秒">
+                    <el-input-number v-model="att.duration"></el-input-number>
+                </el-form-item>
+            </el-form>
+            <div>
+                <el-button style="margin:10px;" type="danger" @click="attack">模拟节点故障</el-button>
+            </div>
+        </el-collapse-item>
+
+    </el-collapse>
+
+
+</div>
+<script src="//cdn.bootcss.com/vue/2.5.9/vue.min.js"></script>
+<script src="//cdn.bootcss.com/element-ui/2.0.11/index.js"></script>
+<script src="//cdn.bootcss.com/vue-resource/1.3.4/vue-resource.min.js"></script>
+<script src="//cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
+
+<script>
+    var vm = new Vue({
+        el: 'div#app',
+        data: {
+            activeNames: ['set', 'get', 'att'],
+            up: {
+                key: 'abc',
+                value: '123456',
+            },
+            down: {
+                key: 'abc',
+                value: '',
+            },
+            att: {
+                duration: 180,
+            },
+        },
+        methods: {
+            set: function () {
+                var self = this;
+                var req = axios.create();
+                req.post('/set', this.up)
+                    .then(function (resp) {
+                        self.$message({
+                            message: 'success',
+                            type: 'success'
+                        });
+                    })
+                    .catch(function (error) {
+                        self.$message.error('fail');
+                    })
+            },
+            get: function () {
+                var self = this;
+                axios.create().post('/get', this.down)
+                    .then(function (resp) {
+                        self.$message({
+                            message: resp.data,
+                            type: 'success'
+                        });
+                        self.down.value = resp.data;
+                    })
+                    .catch(function (error) {
+                        self.$message.error('fail');
+                    })
+            },
+            attack: function () {
+                var self = this;
+                var req = axios.create();
+                req.post('/attack', this.att)
+                    .then(function (resp) {
+                        self.$message({
+                            message: 'success',
+                            type: 'success'
+                        });
+                    })
+                    .catch(function (error) {
+                        self.$message.error('fail');
+                    })
+            },
+        },
+    });
+</script>
+
+</body>
+
+</html>
