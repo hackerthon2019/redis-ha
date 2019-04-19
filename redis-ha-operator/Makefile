@@ -19,6 +19,7 @@ install-crd:
 
 .PHONY: install-operator
 install-operator:
+	operator-sdk build redis-ha-operator:v0.1.0
 	kubectl apply -f deploy/service_account.yaml
 	kubectl apply -f deploy/role.yaml
 	kubectl apply -f deploy/role_binding.yaml
