@@ -1,0 +1,27 @@
+{{- $releaseName := .Release.Name }}
+{{- $sentinelServicePort := .Values.sentinel.sentinelServicePort }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{ include "redis-st.fullname" . }}
+    labels:
+        app.kubernetes.io/name: {{ include "redis-st.name" . }}
+        helm.sh/chart: {{ include "redis-st.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+    sentinel_tunnel.json: |+
+        {
+            "Sentinels_addresses_list":[
+                {{- $local := dict "first" true -}}
+                {{range $i, $e := until (int .Values.sentinel.redisHAReplicas) }}
+                {{- if not $local.first -}},{{- end -}}"{{ $releaseName }}-redis-ha-announce-{{$i}}:{{$sentinelServicePort}}"{{- $_ := set $local "first" false -}}
+                {{end}}
+            ],
+            "Databases":[
+            {
+                "Name":"{{ .Values.sentinel.dbName }}",
+                "Local_port":"{{ .Values.service.port }}"
+            }
+            ]
+        }

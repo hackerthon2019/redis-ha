@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-ha-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: redis-ha-operator
+  template:
+    metadata:
+      labels:
+        name: redis-ha-operator
+    spec:
+      serviceAccountName: redis-ha-operator
+      containers:
+        - name: redis-ha-operator
+          # Replace this with the built image name
+          image: redis-ha-operator:v0.1.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "redis-ha-operator"

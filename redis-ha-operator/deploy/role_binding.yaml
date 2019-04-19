@@ -1,0 +1,11 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: redis-ha-operator
+subjects:
+- kind: ServiceAccount
+  name: redis-ha-operator
+roleRef:
+  kind: Role
+  name: redis-ha-operator
+  apiGroup: rbac.authorization.k8s.io

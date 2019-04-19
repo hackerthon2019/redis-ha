@@ -1,0 +1,5 @@
+---
+- version: v1alpha1
+  group: hackathon.org
+  kind: RedisHA
+  chart: /opt/helm/helm-charts/redis-ha-st
