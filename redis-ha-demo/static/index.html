@@ -8,15 +8,16 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
     <meta http-equiv="Pragma" content="no-cache"/>
     <meta http-equiv="Expires" content="0"/>
-    <title>home</title>
+    <title>demo</title>
     <link href="//cdn.bootcss.com/element-ui/2.0.11/theme-chalk/index.css" rel="stylesheet">
     <style></style>
 </head>
 
 <body style="text-align:center;">
-<div id="app">
+<div id="app" style="width:600px; margin:auto;">
 
     <el-collapse v-model="activeNames">
+
         <el-collapse-item title="Write Cache" name="set">
             <el-form label-width="80px">
                 <el-form-item label="Key">
@@ -45,7 +46,7 @@
         <el-collapse-item title="Simulate Fault" name="att">
             <el-form label-width="80px">
                 <el-form-item label="Second">
-                    <el-input-number v-model="att.duration"></el-input-number>
+                    <el-input type="number" v-model="att.duration"></el-input>
                 </el-form-item>
             </el-form>
             <div>
@@ -54,7 +55,6 @@
         </el-collapse-item>
 
     </el-collapse>
-
 
 </div>
 <script src="//cdn.bootcss.com/vue/2.5.9/vue.min.js"></script>
