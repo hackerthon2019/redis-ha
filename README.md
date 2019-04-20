@@ -23,15 +23,15 @@ Some of the existing redis deployment solutions in the kubernetes community, suc
 In order to solve the above problem, we use Redis officially [sentinel_tunnel] (<https://github.com/RedisLabs/sentinel_tunnel>) as Redis's smart proxy to shield the underlying Redis cluster status details and let the client connect the data node directly using the normal Redis protocol. the architecture diagram is as follows:
 
 ```
-+-------------------------------------------+ _,-'* '-,_
-| +---------------------------------------+ | _,-._ (_ Ov # _)
-| | +--------+ | | +----------+ +----------+ _,-' * `-._ (_' -,_,-'_)
-| | Application code | Redis | | | | Sentinel | + | Redis | + (_ O # _) (_'|,_,|'_)
-| |(uses regular connections) | client +<------>+ Tunnel +<----->+ Sentinel +<--+---->(_`-._ ^ _,- '_) '-,_,-'
-| | +--------+ | | +----------+ | | +----------+ | | (_`|._`| '_,|'_)
-| +---------------------------------------+ | +------ ----+ | +----------+ | (_`|._`|'_,|'_)
-| Application node | +----------+ +----------+ `-._`|'_,-'
-+-------------------------------------------+ `-'
++-------------------------------------------+                                                           _,-'*'-,_
+| +---------------------------------------+ |                                               _,-._      (_ o v # _)
+| |                           +--------+  | |  +----------+       +----------+          _,-'  *  `-._  (_'-,_,-'_)
+| |Application code           | Redis  |  | |  | Sentinel | +     |  Redis   | +       (_  O     #  _) (_'|,_,|'_)
+| |(uses regular connections) | client +<------>+  Tunnel  +<----->+ Sentinel +<--+---->(_`-._ ^ _,-'_)   '-,_,-'
+| |                           +--------+  | |  +----------+ | |   +----------+ | |     (_`|._`|'_,|'_)
+| +---------------------------------------+ |    +----------+ |     +----------+ |     (_`|._`|'_,|'_)
+| Application node                          |      +----------+       +----------+       `-._`|'_,-'
++-------------------------------------------+                                               `-'
 
 ```
 
