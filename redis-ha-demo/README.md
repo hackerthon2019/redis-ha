@@ -1,26 +1,29 @@
-# 代码结构
+# Code Organization
 
-1. app 路由及业务逻辑
-2. client redis操作
-3. cmd main.go
-4. static 静态文件
+1. `app`: router and biz
+2. `client`: redis handler
+3. `cmd`: main.go
+4. `static`:  static file
 
-# 如何运行
+# Usage
 
-## 配置redis
+## Config Redis
 
-此demo没有做配置文件，以代码常量的方式进行配置，定义在在`client/redis.go`中`。
+Edit config.yaml
 
-1. `redis-cli` 客户端命令的绝对全路径（仅未进行环境变量配置的windows需要）
-2. `netWork` 服务端的网络类型
-3. `addr` 服务端IP地址
-4. `port` 服务端端口号
-5. `expire` 在redis存放数据的有效期（为测试数据加上有效期，可以省去手动删除的工作）
-
-## 启动demo
+## Launch Demo
 
 ```
 // set up GOPATH
-cd hackerthon2019 redis-ha-demo
-go run hackerthon2019/redis-ha/redis-ha-demo/cmd/thon/main.go
+cd hackerthon2019/redis-ha-demo
+go run cmd/thon/main.go
 ```
+
+## Test
+
+1. Launch your browser and access `http://{your ip}:{your prot}/`, and will see the page like below:
+![demo](../images/demo.png)
+2. Input a pair of key-value and click `Write Cache`, data will be written into redis.
+3. Input the specific key and click `Read Cache`, then you will see the value.
+4. Input the down time duration by second and click `Simulate Fault`, then one of the redis cluster may sleep.
+5. Click `Read Cache` or `Write Cach`, you will still get the result from the redis cluster when a node is down.

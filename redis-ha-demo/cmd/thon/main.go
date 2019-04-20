@@ -11,15 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"hackerthon2019/redis-ha/redis-ha-demo/app"
-)
-
-const (
-	port = "8888"
+	"hackerthon2019/redis-ha/redis-ha-demo/setting"
 )
 
 func run(gs *gin.Engine) *http.Server {
 	srv := &http.Server{
-		Addr:    ":" + port,
+		Addr:    ":" + setting.Config.App.Port,
 		Handler: gs,
 	}
 
