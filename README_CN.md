@@ -51,14 +51,14 @@ cd redis-ha-operator
 make
 ```
 
-[Makefile] (<https://github.com/hackerthon2019/redis-ha/blob/master/redis-ha-operator/Makefile>)做以下工作:
+[Makefile](<https://github.com/hackerthon2019/redis-ha/blob/master/redis-ha-operator/Makefile>)做以下工作:
 
 1. 编译 [sentinel_tunnel](<https://github.com/RedisLabs/sentinel_tunnel>)的docker镜像
 2. 部署redis-ha的Custom Resource Definitions进Kubernetes集群
 3. 编译redis-ha-operator的docker镜像, 部署redis-ha-operator进Kubernetes集群
 4. 部署示例的redis-ha Custom Resource进Kubernetes集群
 
-我们还写了一个示例应用，该应用使用了上面部署出的Redis高可用集群, 运行该示例应用的办法可参考[这里] (<https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha-demo>)
+我们还写了一个示例应用，该应用使用了上面部署出的Redis高可用集群, 运行该示例应用的办法可参考[这里](<https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha-demo>)
 
 # 如何实现
 
@@ -69,7 +69,7 @@ make
 
 # 后续计划
 
-1. 支持Redis分片集群
+1. 支持[Redis分片集群](https://redis.io/topics/cluster-spec)
 
 # 参考
 
