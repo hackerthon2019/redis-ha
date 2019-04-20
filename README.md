@@ -35,7 +35,7 @@ In order to solve the above problem, we use Redis officially [sentinel_tunnel](<
 
 ```
 
-# Installation Notes
+# Installation
 
 
 
