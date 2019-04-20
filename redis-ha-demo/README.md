@@ -1,26 +1,20 @@
-# 代码结构
+# code organization
 
-1. app 路由及业务逻辑
-2. client redis操作
-3. cmd main.go
-4. static 静态文件
+1. app: router and biz
+2. client: redis handler
+3. cmd: main.go
+4. static:  static file
 
-# 如何运行
+# usage
 
-## 配置redis
+## config redis
 
-此demo没有做配置文件，以代码常量的方式进行配置，定义在在`client/redis.go`中`。
+edit config.yaml
 
-1. `redis-cli` 客户端命令的绝对全路径（仅未进行环境变量配置的windows需要）
-2. `netWork` 服务端的网络类型
-3. `addr` 服务端IP地址
-4. `port` 服务端端口号
-5. `expire` 在redis存放数据的有效期（为测试数据加上有效期，可以省去手动删除的工作）
-
-## 启动demo
+## launch demo
 
 ```
 // set up GOPATH
-cd hackerthon2019 redis-ha-demo
-go run hackerthon2019/redis-ha/redis-ha-demo/cmd/thon/main.go
+cd hackerthon2019/redis-ha-demo
+go run cmd/thon/main.go
 ```

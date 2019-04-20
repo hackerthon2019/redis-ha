@@ -1,0 +1,9 @@
+app:
+  port: "8888"            # port for app
+
+redis:
+  cliPath: "redis-cli"    # full absolute path for redis client
+  network: "tcp"          # redis server network
+  address: "127.0.0.1"    # redis server IP
+  port: "6379"            # redis server port
+  expire: 3600            # expire for data set in redis (needn't to del manual)

@@ -6,18 +6,12 @@ import (
 	"strconv"
 
 	"github.com/gomodule/redigo/redis"
-)
 
-const (
-	cliPath = "redis-cli"
-	netWork = "tcp"
-	addr    = "127.0.0.1"
-	port    = "6379"
-	expire  = 3600 // 有效期(秒)
+	"hackerthon2019/redis-ha/redis-ha-demo/setting"
 )
 
 func SetKV(key string, value string) error {
-	conn, err := redis.Dial(netWork, addr+":"+port)
+	conn, err := redis.Dial(setting.Config.Redis.Network, setting.Config.Redis.Addr+":"+setting.Config.Redis.Port)
 	if err != nil {
 		return err
 	}
@@ -28,12 +22,12 @@ func SetKV(key string, value string) error {
 		return err
 	}
 
-	_, err = conn.Do("EXPIRE", key, expire)
+	_, err = conn.Do("EXPIRE", key, setting.Config.Redis.Expire)
 	return err
 }
 
 func GetKV(key string) (string, error) {
-	conn, err := redis.Dial(netWork, addr+":"+port)
+	conn, err := redis.Dial(setting.Config.Redis.Network, setting.Config.Redis.Addr+":"+setting.Config.Redis.Port)
 	if err != nil {
 		return "", err
 	}
@@ -46,7 +40,7 @@ func GetKV(key string) (string, error) {
 	return res, nil
 }
 
-func Sleep(duraction int) {
-	cmd := exec.Command(cliPath, "-h", addr, "-p", port, "DEBUG", "sleep", strconv.Itoa(duraction))
+func Sleep(duration int) {
+	cmd := exec.Command(setting.Config.Redis.CliPath, "-h", setting.Config.Redis.Addr, "-p", setting.Config.Redis.Port, "DEBUG", "sleep", strconv.Itoa(duration))
 	cmd.Run()
 }
