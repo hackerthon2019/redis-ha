@@ -1,56 +1,80 @@
----
-typora-root-url: .
-typora-copy-images-to: ./images
----
+# Problems
 
-# 问题
+Redis Sentinel is a high-availability master-slave solution given by Redis. Using it, we can deploy a fault-tolerant, highly available Redis cluster. The failover process is automated and requires no human intervention. For more information about Redis Sentinel refer to: <https:// Redis.io/topics/sentinel>.
 
-Redis哨兵是Redis官方给出的高可用主从方案，使用该方案可以部署一个容错的高可用Redis集群，故障转移过程是自动化地进行的，而不需要人为干涉。
-
-> Redis Sentinel provides high availability (HA) for Redis. In practical terms this means that using Sentinel you can create a Redis deployment that tolerates certain kinds of failures without human intervention. For more information about Redis Sentinel refer to: <https://redis.io/topics/sentinel>.
-
-典型的哨兵架构图如下所示：
+A typical sentinel architecture diagram is shown below:
 
 ![image-20190419165707181](images/image-20190419165707181.png)
 
-它由两部分组成，哨兵节点和数据节点：
+It consists of three parts, the sentinel node, the data node and the client node:
 
-- 哨兵节点：哨兵系统由一个或多个哨兵节点组成，哨兵节点是特殊的 Redis 节点，不存储数据。
-- 数据节点：主节点和从节点都是数据节点。
-- 客户端节点：Redis客户端通过sentinel协议感知到当前的主从节点信息，再连接后端的数据节点存取数据。
+- Sentinel node: The sentinel system consists of one or more sentinel nodes, which are special Redis nodes that do not store data.
+- Data node: Both the master node and the slave node are data nodes.
+- Client node: The Redis client fetchs the current master-slave node information through the sentinel protocol, and then connects the data nodes of the back-end to access the data.
 
-上面的架构我们能看到一个问题，这个方案对于客户端是不透明的，需要客户端支持sentinel协议以感知主从节点信息。这个对于有些场景来说意味着要修改客户端的Redis的驱动程序，因此整个方案在实施时有一些困难。
+In the architecture above we can see a problem, this solution is opaque to the client, the client needs to support the sentinel protocol to sense the master-slave information. 
 
-> Connecting an application to a Sentinel-managed Redis deployment is usually done with a Sentinel-aware Redis client. While most Redis clients do support Sentinel, the application needs to call a specialized connection management interface of the client to use it. When one wishes to migrate to a Sentinel-enabled Redis deployment, she/he must modify the application to use Sentinel-based connection management. Moreover, when the application uses a Redis client that does not provide support for Sentinel, the migration becomes that much more complex because it also requires replacing the entire client library.
+Connecting an application to a Sentinel-managed Redis deployment is usually done with a Sentinel-aware Redis client. While most Redis clients do support Sentinel, the application needs to call a specialized connection management interface of the client to use it. When one wishes To migrate to a Sentinel-enabled Redis deployment, she/he must modify the application to use Sentinel-based connection management. Moreover, when the application uses a Redis client that does not provide support for Sentinel, the migration becomes that much more complex It also requires replacing the entire client library.
 
-# 解决方案
+Some of the existing redis deployment solutions in the kubernetes community, such as [redis-ha] (<https://github.com/helm/charts/tree/master/stable/redis-ha>), are basically similar to the above architecture, so the same problem exists.
 
-现在社区中的一些helm chart（如[redis-ha](https://github.com/helm/charts/tree/master/stable/redis-ha)）部署的redis集群就是上面那种方案，因此存在的问题是类似的。
+# Solutions
 
-为了解决上述问题，我们这里采用Redis官方给的[sentinel_tunnel](https://github.com/RedisLabs/sentinel_tunnel)作为Redis SmartProxy，以屏蔽下层的Redis集群状态细节，让客户端以普通Redis协议直接连接过来，架构图如下：
-
-```
-+-------------------------------------------+                                                           _,-'*'-,_
-| +---------------------------------------+ |                                               _,-._      (_ o v # _)
-| |                           +--------+  | |  +----------+       +----------+          _,-'  *  `-._  (_'-,_,-'_)
-| |Application code           | Redis  |  | |  | Sentinel | +     |  Redis   | +       (_  O     #  _) (_'|,_,|'_)
-| |(uses regular connections) | client +<------>+  Tunnel  +<----->+ Sentinel +<--+---->(_`-._ ^ _,-'_)   '-,_,-'
-| |                           +--------+  | |  +----------+ | |   +----------+ | |     (_`|._`|'_,|'_)
-| +---------------------------------------+ |    +----------+ |     +----------+ |     (_`|._`|'_,|'_)
-| Application node                          |      +----------+       +----------+       `-._`|'_,-'
-+-------------------------------------------+                                               `-'
+In order to solve the above problem, we use Redis officially [sentinel_tunnel] (<https://github.com/RedisLabs/sentinel_tunnel>) as Redis's smart proxy to shield the underlying Redis cluster status details and let the client connect the data node directly using the normal Redis protocol. the architecture diagram is as follows:
 
 ```
++-------------------------------------------+ _,-'* '-,_
+| +---------------------------------------+ | _,-._ (_ Ov # _)
+| | +--------+ | | +----------+ +----------+ _,-' * `-._ (_' -,_,-'_)
+| | Application code | Redis | | | | Sentinel | + | Redis | + (_ O # _) (_'|,_,|'_)
+| |(uses regular connections) | client +<------>+ Tunnel +<----->+ Sentinel +<--+---->(_`-._ ^ _,- '_) '-,_,-'
+| | +--------+ | | +----------+ | | +----------+ | | (_`|._`| '_,|'_)
+| +---------------------------------------+ | +------ ----+ | +----------+ | (_`|._`|'_,|'_)
+| Application node | +----------+ +----------+ `-._`|'_,-'
++-------------------------------------------+ `-'
 
-我们这里做的工作：
+```
 
-1. 将[sentinel_tunnel](https://github.com/RedisLabs/sentinel_tunnel)封装为[docker镜像](https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha-operator/helm-charts/redis-ha-st/docker/redis-st)，并[提供helm chart](https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha-operator/helm-charts/redis-ha-st/charts/redis-st)以快速安装它。
-2. 组织[redis-ha](https://github.com/helm/charts/tree/master/stable/redis-ha)及[上述helm chart](https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha-operator/helm-charts/redis-ha-st/charts/redis-st)，最终形成一个[大chart](https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha-operator/helm-charts/redis-ha-st)，用以快速在kubernetes中将上述架构部署出来。
-3. 参考[operator-sdk的helm例子](https://github.com/operator-framework/operator-sdk/blob/master/doc/helm/user-guide.md)，将上述解决方案的chart封装成一个operator，用户只需要按照规范创建cr，即可在kubernetes集群中快速部署客户端透明的高可用redis集群。
-4. 我们还写一个[简单的应用](https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha-demo)，用以验证本架构解决的问题。
+# Installation Notes
 
-# 安装说明
 
-1. redis-ha-operator的安装过程参考[Makefile](https://github.com/hackerthon2019/redis-ha/blob/master/redis-ha-operator/Makefile)。
-2. 应用的运行步骤参考[这里](https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha-demo)。
 
+Deploy a transparent redis cluster in kubernetes becomes a simple job, just execute the `make` command:
+
+```bash
+cd redis-ha-operator
+make
+```
+
+The [Makefile] (<https://github.com/hackerthon2019/redis-ha/blob/master/redis-ha-operator/Makefile>) does the things below:
+
+1. Build [sentinel_tunnel](<https://github.com/RedisLabs/sentinel_tunnel>)'s docker image
+2. Deploy redis-ha's Custom Resource Definitions into kubernetes cluster
+3. Build redis-ha-operator's docker image, Deploy redis-ha-operator into kubernetes cluster
+4. Deploy demo redis-ha Custom Resource into kubernetes cluster
+
+We also write a demo application using the redis-ha above, run the demo application refer to [here] (<https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha-demo>)
+
+# How We Implements
+
+1. Encapsulate [sentinel_tunnel](<https://github.com/RedisLabs/sentinel_tunnel>) as a [docker image] (<https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha -operator/helm-charts/redis-ha-st/docker/redis-st>), and [provide helm chart] (<https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha -operator/helm-charts/redis-ha-st/charts/redis-st>) to install it quickly.
+2. Organize [redis-ha] (<https://github.com/helm/charts/tree/master/stable/redis-ha>) and [above helm chart] (<https://github.com/hackerthon2019 /redis-ha/tree/master/redis-ha-operator/helm-charts/redis-ha-st/charts/redis-st>), eventually forming a [big chart] (<https://github.com/Hackerthon2019/redis-ha/tree/master/redis-ha-operator/helm-charts/redis-ha-st>) to quickly deploy the above architecture in kubernetes.
+3. Refer to [operator-sdk's helm example] (<https://github.com/operator-framework/operator-sdk/blob/master/doc/helm/user-guide.md>) to apply the above solution The chart is encapsulated into an operator, and the user only needs to create the custom resource according to the specification, so that the client transparent, high-availability redis cluster can be quickly deployed in the kubernetes cluster.
+4. We write a [simple application] (<https://github.com/hackerthon2019/redis-ha/tree/master/redis-ha-demo>) to verify the problem be solved by this architecture.
+
+# TODO
+
+1. Support [Redis Sharding Cluster](https://redis.io/topics/cluster-spec)
+
+# Refenrence
+
+1. <https://github.com/RedisLabs/sentinel_tunnel>
+2. <https://helm.sh/>
+3. <https://github.com/helm/charts/tree/master/stable/redis-ha>
+4. <https://redis.io/topics/sentinel>
+5. <https://github.com/operator-framework/operator-sdk/blob/master/doc/helm/user-guide.md>
+6. <https://github.com/gin-gonic/gin>
+7. <https://github.com/spf13/viper>
+8. <https://vuejs.org/>
+9. <https://element.eleme.io/>
+10. <https://github.com/axios/axios>
