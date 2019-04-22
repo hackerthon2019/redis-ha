@@ -74,7 +74,8 @@ We also write a demo application using the redis-ha above, run the demo applicat
 4. <https://redis.io/topics/sentinel>
 5. <https://github.com/operator-framework/operator-sdk/blob/master/doc/helm/user-guide.md>
 6. <https://github.com/gin-gonic/gin>
-7. <https://github.com/spf13/viper>
-8. <https://vuejs.org/>
-9. <https://element.eleme.io/>
-10. <https://github.com/axios/axios>
+7. <https://github.com/go-yaml/yaml>
+8. <https://github.com/gomodule/redigo>
+9. <https://vuejs.org/>
+10. <https://element.eleme.io/>
+11. <https://github.com/axios/axios>
